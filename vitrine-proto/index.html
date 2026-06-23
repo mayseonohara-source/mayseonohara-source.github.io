@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex" />
+<title>Vitrine Virtual — Protótipo navegável</title>
+<style>
+  :root{
+    --ink:#1D2939; --muted:#667085; --line:#EAECF0; --border:#D0D5DD;
+    --page:#F5F3F0; --card:#FFFFFF; --ok:#039855; --off:#D92D20;
+    /* tema da revendedora (editável no painel) */
+    --brand:#B76E79; --brand-soft:#F6E9EC;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif}
+  body{background:var(--page);color:var(--ink);line-height:1.5}
+  .app{max-width:1024px;margin:0 auto;padding:20px 16px 60px}
+
+  /* topo: alternar modos */
+  .modebar{display:flex;gap:8px;justify-content:center;margin-bottom:6px}
+  .modebar button{padding:10px 18px;border:1px solid var(--border);background:#fff;border-radius:999px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:8px}
+  .modebar button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .hint{text-align:center;font-size:12px;color:var(--muted);margin-bottom:18px}
+
+  .screen{display:none}
+  .screen.active{display:block}
+
+  /* ===== modo CLIENTE: moldura de celular ===== */
+  .phonewrap{display:flex;justify-content:center}
+  .phone{width:380px;max-width:100%;background:var(--card);border:1px solid var(--line);border-radius:28px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.10)}
+  .v-cover{height:120px;background:var(--brand);position:relative}
+  .v-head{padding:0 16px 14px;margin-top:-34px;display:flex;align-items:flex-end;gap:12px}
+  .v-logo{width:68px;height:68px;border-radius:18px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--brand);font-size:22px;overflow:hidden}
+  .v-logo img{width:100%;height:100%;object-fit:cover}
+  .v-name{padding-bottom:4px}
+  .v-name b{font-size:17px;display:block}
+  .v-name span{font-size:12px;color:var(--muted)}
+  .v-tabs{display:flex;gap:8px;padding:0 16px 12px;overflow-x:auto}
+  .chip{font-size:12px;padding:6px 12px;border-radius:999px;background:#f1f1f1;color:var(--muted);white-space:nowrap;cursor:pointer}
+  .chip.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 16px}
+  .grid.clean{grid-template-columns:1fr}
+  .prod{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;cursor:pointer;position:relative}
+  .prod .ph{height:120px;background:linear-gradient(135deg,var(--brand-soft),#fff);display:flex;align-items:center;justify-content:center;font-size:30px}
+  .grid.clean .prod{display:flex}.grid.clean .ph{width:110px;height:96px;flex:0 0 auto}
+  .prod .info{padding:8px 10px}
+  .prod .info b{font-size:13px;display:block;line-height:1.25}
+  .prod .info .pr{font-size:14px;font-weight:700;color:var(--brand);margin-top:2px}
+  .badge-off{position:absolute;top:8px;left:8px;background:var(--off);color:#fff;font-size:10px;font-weight:700;padding:3px 7px;border-radius:6px}
+  .prod.off .ph{filter:grayscale(1);opacity:.55}
+  .cartbar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:12px 16px;display:flex;gap:10px;align-items:center}
+  .cartbar .count{flex:1;font-size:13px;color:var(--muted)}
+  .btn-wa{background:#25D366;color:#fff;border:none;border-radius:10px;padding:11px 14px;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px}
+  .btn-brand{background:var(--brand);color:#fff;border:none;border-radius:10px;padding:11px 14px;font-weight:700;font-size:13px;cursor:pointer}
+
+  /* modal produto */
+  .modal{position:absolute;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center}
+  .modal.show{display:flex}
+  .sheet{background:#fff;width:100%;border-radius:18px 18px 0 0;padding:18px}
+  .sheet .ph{height:160px;border-radius:12px;background:linear-gradient(135deg,var(--brand-soft),#fff);display:flex;align-items:center;justify-content:center;font-size:54px;margin-bottom:12px}
+  .sheet h3{font-size:18px}.sheet .pr{font-size:20px;font-weight:700;color:var(--brand);margin:6px 0}
+  .sheet p{font-size:13px;color:var(--muted);margin-bottom:14px}
+  .sheet .row{display:flex;gap:10px}
+
+  /* sacola */
+  .bag{position:absolute;inset:0;background:#fff;display:none;flex-direction:column}
+  .bag.show{display:flex}
+  .bag-h{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;font-weight:700}
+  .bag-list{flex:1;overflow:auto;padding:8px 16px}
+  .bag-item{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .bag-item .ph{width:46px;height:46px;border-radius:8px;background:var(--brand-soft);display:flex;align-items:center;justify-content:center;font-size:20px}
+  .link{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;text-decoration:underline}
+
+  /* ===== modo REVENDEDORA: painel ===== */
+  .panel{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .p-top{display:flex;gap:6px;padding:12px 14px;border-bottom:1px solid var(--line);overflow-x:auto}
+  .p-top button{border:none;background:none;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
+  .p-top button.on{background:var(--ink);color:#fff}
+  .p-body{padding:16px}
+  .ptab{display:none}.ptab.on{display:block}
+  .p-row{display:flex;align-items:center;gap:12px;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px}
+  .p-row .ph{width:44px;height:44px;border-radius:8px;background:var(--brand-soft);display:flex;align-items:center;justify-content:center;font-size:20px}
+  .p-row .nm{flex:1;font-size:14px}
+  .p-row .nm small{display:block;color:var(--muted);font-size:11px}
+  .tag{font-size:10px;font-weight:700;padding:2px 6px;border-radius:5px;background:#eef;color:#3b3bb7;margin-left:6px}
+  .tag.meu{background:#e8f6ee;color:#0a7a44}
+  /* switch */
+  .sw{width:42px;height:24px;border-radius:999px;background:#ccc;position:relative;cursor:pointer;flex:0 0 auto;transition:.15s}
+  .sw.on{background:var(--ok)}
+  .sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.15s}
+  .sw.on::after{left:21px}
+  .field{margin-bottom:14px}
+  .field label{font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px}
+  .field input[type=text]{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:14px}
+  .swatches{display:flex;gap:8px;flex-wrap:wrap}
+  .swatch{width:34px;height:34px;border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 0 0 1px var(--line)}
+  .swatch.sel{box-shadow:0 0 0 2px var(--ink)}
+  .seg{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;width:fit-content}
+  .seg button{border:none;background:#fff;padding:8px 14px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+  .seg button.on{background:var(--brand);color:#fff}
+  .metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+  .metric{background:var(--page);border-radius:10px;padding:12px}
+  .metric b{font-size:22px;display:block}.metric span{font-size:11px;color:var(--muted)}
+  .bar{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px}
+  .bar .track{flex:1;height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+  .bar .fill{height:100%;background:var(--brand)}
+  .note{font-size:12px;color:var(--muted);margin-top:10px}
+  .live{font-size:11px;color:var(--brand);font-weight:700;margin-left:6px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="modebar">
+    <button id="m-cli" class="active" onclick="setMode('cli')">👀 Cliente (vitrine)</button>
+    <button id="m-rev" onclick="setMode('rev')">🛠 Revendedora (painel)</button>
+  </div>
+  <div class="hint" id="hint">Protótipo navegável · dados de exemplo · toque nos produtos e na sacola</div>
+
+  <!-- ================= MODO CLIENTE ================= -->
+  <div class="screen active" id="screen-cli">
+    <div class="phonewrap"><div class="phone" style="position:relative">
+      <div class="v-cover"></div>
+      <div class="v-head">
+        <div class="v-logo" id="vlogo">BL</div>
+        <div class="v-name"><b id="vname">Brilho da Lê</b><span>Semi-joias · revendedora</span></div>
+      </div>
+      <div class="v-tabs">
+        <span class="chip on" onclick="filterCat(this,'all')">Tudo</span>
+        <span class="chip" onclick="filterCat(this,'Anéis')">Anéis</span>
+        <span class="chip" onclick="filterCat(this,'Brincos')">Brincos</span>
+        <span class="chip" onclick="filterCat(this,'Colares')">Colares</span>
+        <span class="chip" onclick="filterCat(this,'Pulseiras')">Pulseiras</span>
+      </div>
+      <div class="grid" id="vgrid"></div>
+
+      <div class="cartbar">
+        <span class="count" id="vcount">Sacola vazia</span>
+        <button class="btn-brand" onclick="openBag()">Ver sacola</button>
+      </div>
+
+      <!-- modal produto -->
+      <div class="modal" id="pmodal"><div class="sheet">
+        <div class="ph" id="m-ph">💍</div>
+        <h3 id="m-nm">—</h3>
+        <div class="pr" id="m-pr">—</div>
+        <p id="m-desc">—</p>
+        <div class="row">
+          <button class="link" style="flex:0" onclick="closeModal()">Fechar</button>
+          <button class="btn-brand" style="flex:1" id="m-add" onclick="addCurrent()">Adicionar à sacola</button>
+        </div>
+      </div></div>
+
+      <!-- sacola -->
+      <div class="bag" id="bag">
+        <div class="bag-h"><button class="link" style="color:var(--ink)" onclick="closeBag()">←</button> Sua sacola</div>
+        <div class="bag-list" id="baglist"></div>
+        <div class="cartbar">
+          <span class="count" id="bagtotal">Total: R$ 0</span>
+          <button class="btn-wa" onclick="sendWhats()">Enviar no WhatsApp</button>
+        </div>
+      </div>
+
+    </div></div>
+  </div>
+
+  <!-- ================= MODO REVENDEDORA ================= -->
+  <div class="screen" id="screen-rev">
+    <div class="panel">
+      <div class="p-top">
+        <button class="on" onclick="ptab(this,'prod')">Produtos</button>
+        <button onclick="ptab(this,'pers')">Personalizar</button>
+        <button onclick="ptab(this,'ped')">Pedidos & relatório</button>
+      </div>
+      <div class="p-body">
+
+        <!-- produtos -->
+        <div class="ptab on" id="pt-prod">
+          <p class="note" style="margin-bottom:12px">Ligue/desligue o que está <b>disponível</b>. Itens do catálogo da marca vêm prontos; você pode adicionar os seus.</p>
+          <div id="plist"></div>
+          <button class="btn-brand" style="margin-top:6px" onclick="alert('No app real: abre formulário para cadastrar um produto seu.')">+ Adicionar produto meu</button>
+        </div>
+
+        <!-- personalizar -->
+        <div class="ptab" id="pt-pers">
+          <div class="field">
+            <label>Nome da vitrine</label>
+            <input type="text" id="in-name" value="Brilho da Lê" oninput="applyName(this.value)" />
+          </div>
+          <div class="field">
+            <label>Cor da marca <span class="live">muda a vitrine ao vivo →</span></label>
+            <div class="swatches" id="swatches"></div>
+          </div>
+          <div class="field">
+            <label>Layout</label>
+            <div class="seg">
+              <button class="on" id="seg-grid" onclick="setLayout('grid')">Grade (2 col)</button>
+              <button id="seg-clean" onclick="setLayout('clean')">Clean (lista)</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Logo</label>
+            <input type="text" id="in-logo" value="BL" maxlength="2" oninput="applyLogo(this.value)" style="width:80px" />
+            <span class="note">(iniciais — no app real: upload de imagem)</span>
+          </div>
+          <p class="note">Quem não quiser personalizar usa o <b>template clean padrão</b> e pronto.</p>
+        </div>
+
+        <!-- pedidos & relatorio -->
+        <div class="ptab" id="pt-ped">
+          <div class="metrics">
+            <div class="metric"><b>12</b><span>pedidos no mês</span></div>
+            <div class="metric"><b>340</b><span>visitas à vitrine</span></div>
+            <div class="metric"><b>R$ 2.180</b><span>em pedidos</span></div>
+          </div>
+          <p class="note" style="margin-bottom:8px"><b>Peças mais vistas</b></p>
+          <div class="bar"><span style="width:110px">Colar Ponto de Luz</span><div class="track"><div class="fill" style="width:90%"></div></div><b>92</b></div>
+          <div class="bar"><span style="width:110px">Brinco Argola Lisa</span><div class="track"><div class="fill" style="width:70%"></div></div><b>71</b></div>
+          <div class="bar"><span style="width:110px">Anel Solitário</span><div class="track"><div class="fill" style="width:48%"></div></div><b>49</b></div>
+          <p class="note" style="margin-top:14px"><b>Últimos pedidos</b> (chegam no seu WhatsApp)</p>
+          <div class="p-row"><div class="ph">🛍️</div><div class="nm">Marina S. <small>Colar Ponto de Luz + Anel Solitário · R$ 218</small></div><span style="font-size:11px;color:var(--ok);font-weight:700">novo</span></div>
+          <div class="p-row"><div class="ph">🛍️</div><div class="nm">Júlia P. <small>Brinco Argola Lisa · R$ 79</small></div></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const PRODUTOS = [
+    {id:1, nm:"Anel Solitário", cat:"Anéis", pr:139, emoji:"💍", origem:"base", desc:"Folheado a ouro 18k, zircônia central. Caixinha inclusa.", disp:true},
+    {id:2, nm:"Brinco Argola Lisa", cat:"Brincos", pr:79, emoji:"🧿", origem:"base", desc:"Argola média, folheada, antialérgica.", disp:true},
+    {id:3, nm:"Colar Ponto de Luz", cat:"Colares", pr:99, emoji:"✨", origem:"base", desc:"Corrente fina com pingente ponto de luz.", disp:true},
+    {id:4, nm:"Pulseira Riviera", cat:"Pulseiras", pr:129, emoji:"💎", origem:"base", desc:"Pulseira cravejada, fecho seguro.", disp:false},
+    {id:5, nm:"Brinco Gota Cristal", cat:"Brincos", pr:89, emoji:"💧", origem:"meu", desc:"Peça própria da revendedora. Cristal lapidado.", disp:true},
+    {id:6, nm:"Colar Choker Veludo", cat:"Colares", pr:69, emoji:"🎀", origem:"meu", desc:"Peça própria. Edição limitada.", disp:true},
+  ];
+  const COLORS = ["#B76E79","#0F6E56","#185FA5","#7F77DD","#993C1D","#444441"];
+  let cat="all", bag=[], current=null, layout="grid";
+
+  function setMode(m){
+    document.getElementById('m-cli').classList.toggle('active',m==='cli');
+    document.getElementById('m-rev').classList.toggle('active',m==='rev');
+    document.getElementById('screen-cli').classList.toggle('active',m==='cli');
+    document.getElementById('screen-rev').classList.toggle('active',m==='rev');
+    document.getElementById('hint').textContent = m==='cli'
+      ? "Modo CLIENTE · é o que a cliente final vê pelo link do WhatsApp"
+      : "Modo REVENDEDORA · o painel de quem gerencia a vitrine. Mude a cor e volte pro modo Cliente.";
+  }
+
+  function renderVitrine(){
+    const g=document.getElementById('vgrid');
+    g.className="grid"+(layout==='clean'?' clean':'');
+    g.innerHTML="";
+    PRODUTOS.filter(p=>p.disp && (cat==='all'||p.cat===cat)).forEach(p=>{
+      const d=document.createElement('div');
+      d.className="prod"+(p.disp?'':' off');
+      d.onclick=()=>openModal(p);
+      d.innerHTML=`<div class="ph">${p.emoji}</div><div class="info"><b>${p.nm}</b><div class="pr">R$ ${p.pr}</div></div>`;
+      g.appendChild(d);
+    });
+    if(!g.innerHTML) g.innerHTML='<p class="note" style="grid-column:1/-1">Nenhuma peça nesta categoria.</p>';
+  }
+  function filterCat(el,c){document.querySelectorAll('.v-tabs .chip').forEach(x=>x.classList.remove('on'));el.classList.add('on');cat=c;renderVitrine();}
+
+  function openModal(p){current=p;document.getElementById('m-ph').textContent=p.emoji;document.getElementById('m-nm').textContent=p.nm;document.getElementById('m-pr').textContent="R$ "+p.pr;document.getElementById('m-desc').textContent=p.desc;document.getElementById('pmodal').classList.add('show');}
+  function closeModal(){document.getElementById('pmodal').classList.remove('show');}
+  function addCurrent(){bag.push(current);closeModal();updateCart();}
+  function updateCart(){
+    const c=document.getElementById('vcount');
+    c.textContent = bag.length? `${bag.length} peça(s) na sacola` : "Sacola vazia";
+  }
+  function openBag(){
+    const l=document.getElementById('baglist');l.innerHTML="";
+    if(!bag.length){l.innerHTML='<p class="note">Sua sacola está vazia. Toque numa peça para adicionar.</p>';}
+    let tot=0;
+    bag.forEach((p,i)=>{tot+=p.pr;const d=document.createElement('div');d.className="bag-item";d.innerHTML=`<div class="ph">${p.emoji}</div><div style="flex:1"><b>${p.nm}</b><br><span style="color:var(--muted)">R$ ${p.pr}</span></div><button class="link" onclick="rm(${i})">remover</button>`;l.appendChild(d);});
+    document.getElementById('bagtotal').textContent="Total: R$ "+tot;
+    document.getElementById('bag').classList.add('show');
+  }
+  function rm(i){bag.splice(i,1);openBag();updateCart();}
+  function closeBag(){document.getElementById('bag').classList.remove('show');}
+  function sendWhats(){
+    if(!bag.length){alert("Adicione peças primeiro 🙂");return;}
+    const itens=bag.map(p=>`• ${p.nm} — R$ ${p.pr}`).join("\n");
+    const tot=bag.reduce((s,p)=>s+p.pr,0);
+    alert("No app real, abre o WhatsApp da revendedora com a mensagem:\n\n"+
+      "Oi! Tenho interesse nestas peças da "+document.getElementById('vname').textContent+":\n"+itens+"\n\nTotal: R$ "+tot);
+  }
+
+  /* painel: produtos */
+  function renderPlist(){
+    const l=document.getElementById('plist');l.innerHTML="";
+    PRODUTOS.forEach(p=>{
+      const r=document.createElement('div');r.className="p-row";
+      const tag = p.origem==='base'?'<span class="tag">catálogo</span>':'<span class="tag meu">meu</span>';
+      r.innerHTML=`<div class="ph">${p.emoji}</div><div class="nm"><span>${p.nm}${tag}</span><small>R$ ${p.pr} · ${p.cat}</small></div><div class="sw ${p.disp?'on':''}" onclick="toggle(${p.id},this)"></div>`;
+      l.appendChild(r);
+    });
+  }
+  function toggle(id,el){const p=PRODUTOS.find(x=>x.id===id);p.disp=!p.disp;el.classList.toggle('on',p.disp);renderVitrine();}
+
+  /* painel: personalizar (ao vivo) */
+  function buildSwatches(){
+    const s=document.getElementById('swatches');
+    COLORS.forEach((c,i)=>{const b=document.createElement('div');b.className="swatch"+(i===0?' sel':'');b.style.background=c;b.onclick=()=>setColor(c,b);s.appendChild(b);});
+  }
+  function setColor(c,el){
+    document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');
+    document.documentElement.style.setProperty('--brand',c);
+    document.documentElement.style.setProperty('--brand-soft',hexSoft(c));
+  }
+  function hexSoft(hex){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `rgba(${r},${g},${b},0.14)`;}
+  function applyName(v){document.getElementById('vname').textContent=v||"Sua vitrine";}
+  function applyLogo(v){document.getElementById('vlogo').textContent=(v||"").toUpperCase()||"·";}
+  function setLayout(l){layout=l;document.getElementById('seg-grid').classList.toggle('on',l==='grid');document.getElementById('seg-clean').classList.toggle('on',l==='clean');renderVitrine();}
+
+  function ptab(el,t){document.querySelectorAll('.p-top button').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.querySelectorAll('.ptab').forEach(x=>x.classList.remove('on'));document.getElementById('pt-'+t).classList.add('on');}
+
+  renderVitrine();renderPlist();buildSwatches();updateCart();
+</script>
+</body>
+</html>
