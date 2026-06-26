@@ -111,6 +111,13 @@
 <body>
 <div class="app">
 
+  <div style="text-align:center;margin-bottom:16px">
+    <div style="font-family:Georgia,'Times New Roman',serif;font-size:27px;letter-spacing:.5px;color:var(--ink)">
+      <span style="color:#D4537E">&#10022;</span> Une<span style="color:#D4537E">Venda</span>
+    </div>
+    <div style="font-size:12px;color:var(--muted);letter-spacing:.04em">vitrine virtual para revendedoras</div>
+  </div>
+
   <div class="modebar">
     <button id="m-cli" class="active" onclick="setMode('cli')">👀 Cliente (vitrine)</button>
     <button id="m-rev" onclick="setMode('rev')">🛠 Revendedora (painel)</button>
@@ -133,6 +140,7 @@
         <span class="chip" onclick="filterCat(this,'Pulseiras')">Pulseiras</span>
       </div>
       <div class="grid" id="vgrid"></div>
+      <div style="text-align:center;font-size:11px;color:var(--muted);padding:2px 0 10px">&#10022; feito com <b style="color:#D4537E">UneVenda</b></div>
 
       <div class="cartbar">
         <span class="count" id="vcount">Sacola vazia</span>
