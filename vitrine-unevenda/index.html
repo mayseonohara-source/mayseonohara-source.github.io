@@ -5,16 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="robots" content="noindex" />
 <title>Vitrine Virtual — Protótipo navegável</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Newsreader:ital@1&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#1C2A2A; --muted:#7A7468; --line:#EDE7DA; --border:#DDD3C2;
-    --page:#FBF8F2; --card:#FFFFFF; --ok:#0F7A52; --off:#C0392B;
-    /* marca da plataforma (paleta Dourado & petróleo) */
-    --plat:#14524A; --gold:#C9A24B;
+    --ink:#211B1F; --muted:#8A7E77; --line:#E7D8CC; --border:#DAC9BB;
+    --page:#F8F3EC; --card:#FFFFFF; --ok:#0F7A52; --off:#C0392B;
+    /* marca UneVenda — Ônix & Ouro */
+    --plat:#211B1F; --gold:#C49A5E; --wine:#6E2F44; --sand:#E7D8CC;
     /* tema da revendedora (editável no painel) — padrão inicial */
-    --brand:#14524A; --brand-soft:#E3ECE9;
+    --brand:#6E2F44; --brand-soft:#F0E4EA;
   }
-  *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Outfit',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif}
   body{background:var(--page);color:var(--ink);line-height:1.5}
   .app{max-width:1024px;margin:0 auto;padding:20px 16px 60px}
 
@@ -114,10 +117,11 @@
 <div class="app">
 
   <div style="text-align:center;margin-bottom:16px">
-    <div style="font-family:Georgia,'Times New Roman',serif;font-size:28px;letter-spacing:.5px;color:var(--plat)">
-      <span style="color:var(--gold)">&#10022;</span> Une<span style="color:var(--gold)">Venda</span>
+    <div style="display:inline-flex;align-items:center;gap:10px">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="#211B1F"/><text x="17" y="23" text-anchor="middle" font-family="Outfit,sans-serif" font-weight="700" font-size="14" fill="#C49A5E" letter-spacing="-.5">UV</text></svg>
+      <span style="font-weight:600;font-size:26px;letter-spacing:-.01em;color:var(--plat)">UneVenda</span>
     </div>
-    <div style="font-size:12px;color:var(--muted);letter-spacing:.04em">vitrine virtual para revendedoras</div>
+    <div style="font-family:'Newsreader',Georgia,serif;font-style:italic;font-size:15px;color:var(--muted);margin-top:6px">&ldquo;Sua vitrine, do seu jeito.&rdquo;</div>
   </div>
 
   <div class="modebar">
@@ -142,7 +146,10 @@
         <span class="chip" onclick="filterCat(this,'Pulseiras')">Pulseiras</span>
       </div>
       <div class="grid" id="vgrid"></div>
-      <div style="text-align:center;font-size:11px;color:var(--muted);padding:2px 0 10px"><span style="color:var(--gold)">&#10022;</span> feito com <b style="color:var(--plat)">UneVenda</b></div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:5px;font-size:11px;color:var(--muted);padding:2px 0 10px">
+        <svg width="15" height="15" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="#211B1F"/><text x="17" y="23" text-anchor="middle" font-family="Outfit,sans-serif" font-weight="700" font-size="14" fill="#C49A5E" letter-spacing="-.5">UV</text></svg>
+        feito com <b style="font-weight:600;color:var(--plat)">UneVenda</b>
+      </div>
 
       <div class="cartbar">
         <span class="count" id="vcount">Sacola vazia</span>
@@ -247,7 +254,7 @@
     {id:5, nm:"Brinco Gota Cristal", cat:"Brincos", pr:89, emoji:"💧", origem:"meu", desc:"Peça própria da revendedora. Cristal lapidado.", disp:true},
     {id:6, nm:"Colar Choker Veludo", cat:"Colares", pr:69, emoji:"🎀", origem:"meu", desc:"Peça própria. Edição limitada.", disp:true},
   ];
-  const COLORS = ["#14524A","#C9A24B","#B76E79","#7B2D3A","#185FA5","#444441"];
+  const COLORS = ["#6E2F44","#C49A5E","#211B1F","#1D9E75","#B76E79","#185FA5"];
   let cat="all", bag=[], current=null, layout="grid";
 
   function setMode(m){
